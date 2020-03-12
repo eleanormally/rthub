@@ -1,0 +1,2 @@
+created client and server:
+  actual sending of the key isn't working yet, get that to work. 
