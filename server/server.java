@@ -10,23 +10,29 @@ import java.io.File;
 import java.io.FileNotFoundException;
 
 public class server {
-  public static String decrypt(String received,String keyDir) {
+  public static String encrypted(String keyDir) {
+    Date date = new Date();
+    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+    String time = formatter.format(date);
     try{
-      //decryption
       String key = "";
       try{key = (new Scanner(new File(keyDir))).next();}
-      catch (FileNotFoundException f){System.out.println("key file not found");throw new Exception("no file");}
+      catch (FileNotFoundException f) {System.out.println("key file not found");}
+      // Create key and cipher
       Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
       Cipher cipher = Cipher.getInstance("AES");
-      cipher.init(Cipher.DECRYPT_MODE,aesKey);
-      String decrypted = new String(cipher.doFinal(received.getBytes()));
-      return decrypted;
-    } catch (Exception e) {
+      // encrypt the text
+      cipher.init(Cipher.ENCRYPT_MODE, aesKey);
+      byte[] encrypted = cipher.doFinal(time.getBytes());
+      String out = new String(encrypted);
+      //stupid thing to fix the fact that char 65533 gets converted to 63 when sent
+      out = out.replace((char)65533, (char)63);
+      return out;
+    } catch (Exception e){
       e.printStackTrace();
-      System.err.println("decryption error");
-      return "error";
+      System.out.println("encryption error");
+      return "ERROR";
     }
-
   }
   public static void main(String[] args) {
     String keyDir = "tKey.txt";
@@ -37,32 +43,38 @@ public class server {
       System.exit(-6);
     }
     Socket client = null;
-    try{
-      client = socket.accept();
+    System.out.println("Server Online\n\n");
+    while(true){
+      try{
+        client = socket.accept();
+        PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-      PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-      BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+        String received = in.readLine();
+        while((received = in.readLine()) != null) {
+          if (received.length() > 3 && received.substring(0,4).equals("key=")){
+            in.close();
+            break;
+          }
+        }
+        received = received.substring(4).substring(0,received.length()-4);
+        //if valid
 
-      String received = in.readLine();
-      while((received = in.readLine()) != null) System.out.println(received);
+        if(received.equals(encrypted(keyDir))){
+          //give ips
+          Date date = new Date();
+          SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+          String time = formatter.format(date);
+          System.out.println("user " + user + " connected at " + time);
 
-      Date date = new Date();
-      SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
-      String time = formatter.format(date);
-      //if valid
-      if(decrypt(received,keyDir).equals(time)){
-        //give ips
-        System.out.println("Valid");
-
+        }
+        else{
+          System.out.println("Unauthorized Attempt to Connect (Bad Key)");
+        }
       }
-      out.close();
-      in.close();
-      client.close();
-      socket.close();
-    }
-    catch (IOException e){
-      System.err.print("Unable to Accept");
-      System.exit(-6);
+      catch (IOException e){
+        System.out.println("Unable to Accept Request");
+      }
     }
   }
 }

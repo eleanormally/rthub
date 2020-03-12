@@ -12,7 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Scanner;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 
 public class ReferenceLink {
@@ -29,7 +29,7 @@ public class ReferenceLink {
     this.setUrl(url);
   }
 
-  public byte[] encrypted() {
+  public String encrypted() {
     Date date = new Date();
     SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     String time = formatter.format(date);
@@ -43,23 +43,25 @@ public class ReferenceLink {
       // encrypt the text
       cipher.init(Cipher.ENCRYPT_MODE, aesKey);
       byte[] encrypted = cipher.doFinal(time.getBytes());
-      return encrypted;
+      String out = new String(encrypted);
+      return out;
     } catch (Exception e){
       e.printStackTrace();
-      System.out.println("decryption error");
-      return "ERROR".getBytes();
+      System.out.println("encryption error");
+      return "ERROR";
     }
   }
 
   public ArrayList<String> pollUsers(){
     ArrayList<String> data = new ArrayList<String>();
-    try{
-      byte[] enc = encrypted();
-      if (new String(enc).equals("ERROR")) throw new Exception("error");
+     try{
+      String enc = encrypted();
+      if (enc.equals("ERROR")) throw new Exception("error");
       this.con = new URL(this.urlString).openConnection();
       this.con.setDoOutput(true);
-      OutputStream out = this.con.getOutputStream();
-      out.write(enc);
+      OutputStreamWriter out = new OutputStreamWriter(this.con.getOutputStream());
+      out.write("key=" + enc + "\n");
+      out.close();
       BufferedReader reader = new BufferedReader(new InputStreamReader(this.con.getInputStream()));
       String line;
       while((line = reader.readLine()) != null) data.add(new String(line));

@@ -1,2 +1,9 @@
 created client and server:
-  actual sending of the key isn't working yet, get that to work. 
+  actual sending of the key isn't working yet, get that to work.
+functional authentication + sending
+  can now verify someone should be allowed to get Data
+  easy to send data between client and server
+  still need to do updating so that the ips are refreshed
+  need to send ip to server for storage
+  need to send traits about client
+  need to constant stream back
