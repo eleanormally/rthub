@@ -1,5 +1,6 @@
 created client and server:
   actual sending of the key isn't working yet, get that to work.
+
 functional authentication + sending
   can now verify someone should be allowed to get Data
   easy to send data between client and server
@@ -7,3 +8,13 @@ functional authentication + sending
   need to send ip to server for storage
   need to send traits about client
   need to constant stream back
+
+completed server connection & information transfer:
+  remove key= & other headers so that data is just represented by an order and separated by a marker
+  added client ip, client network, client name, and client status to upload
+  added response and update from server to client
+  made parsing work more dynamically so that new data points can be added easily
+  renamed ReferenceLink class to GroupHost class to better reflect function
+  stopped server from breaking every time you connect
+  added batch files to get default gateway
+  added Client class serverside to store client list & added User class clientside (same code)
